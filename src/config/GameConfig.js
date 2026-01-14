@@ -1,15 +1,15 @@
 export const GAME_CONFIG = {
-    width: 800,
-    height: 650,
+    width: 1600,  // 32 tiles × 50 = 1600 (au lieu de 1500)
+    height: 800,  // 16 tiles × 50 = 800 ✅
     tileSize: 50,
-    moveSpeed: 120, // Réduit pour un meilleur contrôle
+    moveSpeed: 120,
     ernest: {
-        size: 18, // Réduit de 22 à 1
+        size: 18,
         color: 0xffff00
     },
     ghost: {
-        size: 16, // Réduit de 18 à 16
-        baseSpeed: 0.75, // 75% de la vitesse de ernest
+        size: 16,
+        baseSpeed: 0.75,
         updateInterval: 500
     },
     colors: {

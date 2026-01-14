@@ -3,6 +3,69 @@ import { getTileCoord, getPixelCoord, isAlignedToGrid } from '../utils/gridUtils
 import { isWalkable } from '../map/level1.js';
 
 export class Ghost {
+
+    static preload(scene) {
+        scene.load.image('soldier_down_left', 'assets/images/images_ghost/spr_soldier_down_left.png');
+        scene.load.image('soldier_down_mid', 'assets/images/images_ghost/spr_soldier_down_mid.png');
+        scene.load.image('soldier_down_right', 'assets/images/images_ghost/spr_soldier_down_right.png');
+
+        scene.load.image('soldier_up_left', 'assets/images/images_ghost/spr_soldier_up_left.png');
+        scene.load.image('soldier_up_mid', 'assets/images/images_ghost/spr_soldier_up_mid.png');
+        scene.load.image('soldier_up_right', 'assets/images/images_ghost/spr_soldier_up_right.png');
+
+        scene.load.image('soldier_left_1', 'assets/images/images_ghost/spr_soldier_left.png');
+        scene.load.image('soldier_left_2', 'assets/images/images_ghost/spr_soldier_left_2.png');
+
+        scene.load.image('soldier_right_1', 'assets/images/images_ghost/spr_soldier_right.png');
+        scene.load.image('soldier_right_2', 'assets/images/images_ghost/spr_soldier_right_2.png');
+    }
+
+    static createAnimations(scene) {
+        if (scene.anims.exists('soldier-walk-down')) return;
+
+        scene.anims.create({
+            key: 'soldier-walk-down',
+            frames: [
+                { key: 'soldier_down_left' },
+                { key: 'soldier_down_mid' },
+                { key: 'soldier_down_right' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'soldier-walk-up',
+            frames: [
+                { key: 'soldier_up_left' },
+                { key: 'soldier_up_mid' },
+                { key: 'soldier_up_right' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'soldier-walk-left',
+            frames: [
+                { key: 'soldier_left_1' },
+                { key: 'soldier_left_2' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'soldier-walk-right',
+            frames: [
+                { key: 'soldier_right_1' },
+                { key: 'soldier_right_2' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+    }
+
     constructor(scene, startTileX, startTileY, colorIndex, name) {
         this.scene = scene;
         this.name = name;
@@ -14,45 +77,10 @@ export class Ghost {
         const startX = getPixelCoord(startTileX);
         const startY = getPixelCoord(startTileY);
 
-        this.sprite = scene.physics.add.sprite(startX, startY, `ghost${colorIndex}`);
-        this.sprite.setSize(GAME_CONFIG.tileSize * 0.6, GAME_CONFIG.tileSize * 0.6);
-        this.sprite.setDisplaySize(GAME_CONFIG.tileSize * 0.8, GAME_CONFIG.tileSize * 0.8);
-    }
-
-    static preload(scene) {
-        GAME_CONFIG.colors.ghosts.forEach((color, index) => {
-            const graphics = scene.add.graphics();
-            const size = GAME_CONFIG.ghost.size;
-
-            // Corps du fantôme
-            graphics.fillStyle(color);
-            graphics.fillCircle(size, size, size);
-
-            // Base ondulée
-            graphics.beginPath();
-            graphics.moveTo(size - size, size);
-            for (let i = 0; i <= 4; i++) {
-                const x = size - size + (i * size / 2);
-                const y = size + (i % 2 === 0 ? size / 3 : 0);
-                graphics.lineTo(x, y);
-            }
-            graphics.lineTo(size + size, size);
-            graphics.closePath();
-            graphics.fillPath();
-
-            // Yeux blancs
-            graphics.fillStyle(0xffffff);
-            graphics.fillCircle(size - 6, size - 4, 5);
-            graphics.fillCircle(size + 6, size - 4, 5);
-
-            // Pupilles
-            graphics.fillStyle(0x000000);
-            graphics.fillCircle(size - 6, size - 4, 3);
-            graphics.fillCircle(size + 6, size - 4, 3);
-
-            graphics.generateTexture(`ghost${index}`, size * 2, size * 2);
-            graphics.destroy();
-        });
+        this.sprite = scene.physics.add.sprite(startX, startY, 'soldier_down_mid');
+        this.sprite.setDisplaySize(40, 40);
+        this.sprite.body.setSize(24, 24, true);
+        this.sprite.body.setOffset(8, 8);
     }
 
     update(delta, ernestTileX, ernestTileY) {
@@ -115,6 +143,22 @@ export class Ghost {
             this.currentDirection.x * this.speed,
             this.currentDirection.y * this.speed
         );
+
+        // Animation
+        let animKey = null;
+        const velX = this.currentDirection.x * this.speed;
+        const velY = this.currentDirection.y * this.speed;
+
+        if (velY > 0) animKey = 'soldier-walk-down';
+        else if (velY < 0) animKey = 'soldier-walk-up';
+        else if (velX < 0) animKey = 'soldier-walk-left';
+        else if (velX > 0) animKey = 'soldier-walk-right';
+
+        if (!animKey) {
+            this.sprite.anims.stop();
+        } else if (this.sprite.anims.currentAnim?.key !== animKey) {
+            this.sprite.anims.play(animKey);
+        }
     }
 
     getSprite() {

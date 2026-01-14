@@ -8,11 +8,15 @@ const config = {
     height: GAME_CONFIG.height,
     parent: 'game-container',
     backgroundColor: '#000000',
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     physics: {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: true // Mets true pour voir les collisions
+            debug: false  // 🔍 MODE DEBUG ACTIVÉ pour voir les hitbox
         }
     },
     scene: [GameScene]
