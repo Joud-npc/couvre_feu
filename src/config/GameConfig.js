@@ -3,13 +3,13 @@ export const GAME_CONFIG = {
     height: 650,
     tileSize: 50,
     moveSpeed: 120, // Réduit pour un meilleur contrôle
-    pacman: {
+    ernest: {
         size: 18, // Réduit de 22 à 1
         color: 0xffff00
     },
     ghost: {
         size: 16, // Réduit de 18 à 16
-        baseSpeed: 0.75, // 75% de la vitesse de Pacman
+        baseSpeed: 0.75, // 75% de la vitesse de ernest
         updateInterval: 500
     },
     colors: {

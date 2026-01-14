@@ -1,7 +1,7 @@
 import { GAME_CONFIG, GHOST_NAMES, GHOST_START_POSITIONS } from '../config/GameConfig.js';
-import { Pacman } from '../entities/Pacman.js';
+import { Ernest } from '../entities/Ernest.js';
 import { Ghost } from '../entities/Ghost.js';
-import { createMaze } from '../map/level1.js';
+import { createMaze, isWalkable } from '../map/level1.js';
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -9,7 +9,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        Pacman.preload(this);
+        Ernest.preload(this);
         Ghost.preload(this);
     }
 
@@ -23,11 +23,24 @@ export class GameScene extends Phaser.Scene {
         const { walls } = createMaze(this);
         this.walls = walls;
 
+        console.log('Nombre de murs créés:', this.walls.getChildren().length);
+        console.log('Premier mur:', this.walls.getChildren()[0]);
+
+        // DEBUG - Tester isWalkable
+        console.log('isWalkable(7, 6):', isWalkable(7, 6)); // Devrait être true
+        console.log('isWalkable(0, 0):', isWalkable(0, 0)); // Devrait être false (mur)
+        console.log('isWalkable(1, 1):', isWalkable(1, 1)); // Devrait être true
+        console.log('isWalkable(8, 6):', isWalkable(8, 6)); // Devrait être true
+        console.log('isWalkable(7, 7):', isWalkable(7, 7)); // Devrait être true
+        console.log('isWalkable(7, 5):', isWalkable(7, 5)); // Devrait être true
+        console.log('isWalkable(6, 6):', isWalkable(6, 6)); // Devrait être true
+
+
         // Création de Pac-Man
-        this.pacman = new Pacman(this, 1, 1);
+        this.ernest = new Ernest(this, 7, 1);
 
         // Collision Pac-Man avec les murs
-        this.physics.add.collider(this.pacman.sprite, this.walls);
+        this.physics.add.collider(this.ernest.sprite, this.walls);
 
         // Création des fantômes
         this.ghosts = [];
@@ -61,7 +74,7 @@ export class GameScene extends Phaser.Scene {
     setupCollisions() {
         this.ghosts.forEach(ghost => {
             this.physics.add.overlap(
-                this.pacman.sprite,
+                this.ernest.sprite,
                 ghost.getSprite(),
                 () => this.handleGameOver(),
                 null,
@@ -73,11 +86,11 @@ export class GameScene extends Phaser.Scene {
     update(time, delta) {
         if (this.gameOver) return;
 
-        this.pacman.update(this.cursors);
+        this.ernest.update(this.cursors);
 
-        const pacmanTile = this.pacman.getTilePosition();
+        const ernestTile = this.ernest.getTilePosition();
         this.ghosts.forEach(ghost => {
-            ghost.update(delta, pacmanTile.x, pacmanTile.y);
+            ghost.update(delta, ernestTile.x, ernestTile.y);
         });
     }
 
@@ -86,7 +99,7 @@ export class GameScene extends Phaser.Scene {
 
         this.gameOver = true;
         this.physics.pause();
-        this.pacman.sprite.setTint(0xff0000);
+        this.ernest.sprite.setTint(0xff0000);
 
         this.add.text(
             GAME_CONFIG.width / 2,

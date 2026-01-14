@@ -55,7 +55,7 @@ export class Ghost {
         });
     }
 
-    update(delta, pacmanTileX, pacmanTileY) {
+    update(delta, ernestTileX, ernestTileY) {
         this.updateTimer += delta;
 
         const tileX = getTileCoord(this.sprite.x);
@@ -66,11 +66,8 @@ export class Ghost {
         if (alignedX && alignedY && this.updateTimer > GAME_CONFIG.ghost.updateInterval) {
             this.updateTimer = 0;
 
-            this.sprite.x = getPixelCoord(tileX);
-            this.sprite.y = getPixelCoord(tileY);
-
-            const dx = pacmanTileX - tileX;
-            const dy = pacmanTileY - tileY;
+            const dx = ernestTileX - tileX;
+            const dy = ernestTileY - tileY;
 
             let possibleDirections = [];
 
