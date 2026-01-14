@@ -4,7 +4,7 @@ import { isWalkable } from '../map/level1.js';
 
 export class Ernest {
     static preload(scene) {
-        scene.load.image('ernest_down_left', 'assets/images/images_ernest/images_ernest/spr_ernest_down_left.png');
+        scene.load.image('ernest_down_left', 'assets/images/images_ernest/spr_ernest_down_left.png');
         scene.load.image('ernest_down_mid', 'assets/images/images_ernest/spr_ernest_down_mid.png');
         scene.load.image('ernest_down_right', 'assets/images/images_ernest/spr_ernest_down_right.png');
 

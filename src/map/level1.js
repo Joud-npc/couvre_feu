@@ -77,42 +77,43 @@ function generateMaze(width, height) {
 }
 
 // 🚪 Trouver des positions pour les portails sur les bords
+// 🚪 Trouver UNE SEULE position pour le portail sur les bords
 function findPortalPositions(width, height) {
-    const portals = [];
     const sides = ['top', 'bottom', 'left', 'right'];
+    const randomSide = sides[Math.floor(Math.random() * sides.length)];
 
-    sides.forEach(side => {
-        let x, y;
-        let attempts = 0;
+    let x, y;
+    let attempts = 0;
 
-        do {
-            switch(side) {
-                case 'top':
-                    x = Math.floor(Math.random() * (width - 4)) + 2;
-                    y = 1;
-                    break;
-                case 'bottom':
-                    x = Math.floor(Math.random() * (width - 4)) + 2;
-                    y = height - 2;
-                    break;
-                case 'left':
-                    x = 1;
-                    y = Math.floor(Math.random() * (height - 4)) + 2;
-                    break;
-                case 'right':
-                    x = width - 2;
-                    y = Math.floor(Math.random() * (height - 4)) + 2;
-                    break;
-            }
-            attempts++;
-        } while (LEVEL_MAP[y][x] === 1 && attempts < 50);
-
-        if (LEVEL_MAP[y][x] === 0) {
-            portals.push({ x, y, side });
+    do {
+        switch(randomSide) {
+            case 'top':
+                x = Math.floor(Math.random() * (width - 4)) + 2;
+                y = 1;
+                break;
+            case 'bottom':
+                x = Math.floor(Math.random() * (width - 4)) + 2;
+                y = height - 2;
+                break;
+            case 'left':
+                x = 1;
+                y = Math.floor(Math.random() * (height - 4)) + 2;
+                break;
+            case 'right':
+                x = width - 2;
+                y = Math.floor(Math.random() * (height - 4)) + 2;
+                break;
         }
-    });
+        attempts++;
+    } while (LEVEL_MAP[y][x] === 1 && attempts < 50);
 
-    return portals;
+    // Retourner un seul portail
+    if (LEVEL_MAP[y][x] === 0) {
+        return [{ x, y, side: randomSide }];
+    }
+
+    // Fallback si aucune position valide trouvée
+    return [{ x: Math.floor(width / 2), y: 1, side: 'top' }];
 }
 
 export function findValidSpawnPosition(avoidX, avoidY, minDistance = 5) {

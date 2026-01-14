@@ -161,6 +161,12 @@ export class Ghost {
         }
     }
 
+    reset() {
+        this.updateTimer = 0;
+        this.currentDirection = DIRECTIONS.NONE;
+        this.sprite.setVelocity(0, 0);
+    }
+
     getSprite() {
         return this.sprite;
     }

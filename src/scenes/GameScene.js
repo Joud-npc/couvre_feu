@@ -20,6 +20,9 @@ export class GameScene extends Phaser.Scene {
     create() {
         this.gameOver = false;
         this.currentLevel = 1; // 🎮 Compteur de niveau
+        this.totalScore = 0; // 💯 Score total
+        this.levelPoints = 0; // Points du niveau actuel
+        this.levelStartTime = 0; // Timer du niveau
 
         // ✅ Créer les animations pour Ernest ET Ghost
         Ernest.createAnimations(this);
@@ -38,10 +41,16 @@ export class GameScene extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.scoreText = this.add.text(16, 16, 'Niveau: 1', {
+        // 🎯 Textes d'interface
+        this.scoreText = this.add.text(16, 16, 'Niveau: 1 | Score: 0', {
             fontSize: '24px',
             fill: '#fff'
-        }).setScrollFactor(0);
+        }).setScrollFactor(0).setDepth(1000);
+
+        this.timerText = this.add.text(16, 50, 'Points: 100 | Temps: 30s', {
+            fontSize: '20px',
+            fill: '#FFD700'
+        }).setScrollFactor(0).setDepth(1000);
     }
 
     setupLevel() {
@@ -59,6 +68,10 @@ export class GameScene extends Phaser.Scene {
         if (this.ernest && this.ernest.sprite) {
             this.ernest.sprite.destroy();
         }
+
+        // 💯 Initialiser les points du niveau
+        this.levelPoints = 100;
+        this.levelStartTime = this.time.now;
 
         generateNewLevel();
         const { walls, portals } = createMaze(this);
@@ -92,16 +105,18 @@ export class GameScene extends Phaser.Scene {
         this.ghosts = [];
         const ghostSpeed = 0.75 + (this.currentLevel - 1) * 0.05; // Plus rapides à chaque niveau
 
-        for (let i = 0; i < GHOST_NAMES.length; i++) {
-            const ghostPos = findValidSpawnPosition(ernestPos.x, ernestPos.y, 5);
-            const ghost = new Ghost(this, ghostPos.x, ghostPos.y, i, GHOST_NAMES[i]);
+        const ghostCount = Math.min(GHOST_NAMES.length, Math.floor((this.currentLevel - 1) / 5) + 4);
 
-            // Augmenter la vitesse en fonction du niveau
+        for (let i = 0; i < ghostCount; i++) {
+            const ghostPos = findValidSpawnPosition(ernestPos.x, ernestPos.y, 5);
+            const ghostName = GHOST_NAMES[i % GHOST_NAMES.length]; // Répète les noms si besoin
+            const ghost = new Ghost(this, ghostPos.x, ghostPos.y, i, ghostName);
+
             ghost.speed = GAME_CONFIG.moveSpeed * ghostSpeed;
+            ghost.reset();
 
             this.ghosts.push(ghost);
 
-            // Collider pour les fantômes
             this.physics.add.collider(ghost.getSprite(), this.walls);
         }
 
@@ -113,15 +128,35 @@ export class GameScene extends Phaser.Scene {
 
         this.isTransitioning = true;
 
+        // 💯 Ajouter les points restants au score total
+        const pointsEarned = Math.max(0, this.levelPoints);
+        this.totalScore += pointsEarned;
+
         // 🎉 Effet visuel de transition
         this.cameras.main.flash(500, 255, 215, 0); // Flash doré
 
+        // Afficher les points gagnés
+        const bonusText = this.add.text(
+            GAME_CONFIG.width / 2,
+            GAME_CONFIG.height / 2,
+            `+${pointsEarned} points!`,
+            { fontSize: '48px', fill: '#FFD700' }
+        ).setOrigin(0.5).setScrollFactor(0);
+
+        this.tweens.add({
+            targets: bonusText,
+            y: GAME_CONFIG.height / 2 - 50,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => bonusText.destroy()
+        });
+
         // 🎮 Passer au niveau suivant
         this.currentLevel++;
-        this.scoreText.setText(`Niveau: ${this.currentLevel}`);
+        this.scoreText.setText(`Niveau: ${this.currentLevel} | Score: ${this.totalScore}`);
 
         // Petit délai avant de recharger le niveau
-        this.time.delayedCall(300, () => {
+        this.time.delayedCall(600, () => {
             this.setupLevel();
             this.isTransitioning = false;
         });
@@ -148,6 +183,25 @@ export class GameScene extends Phaser.Scene {
         this.ghosts.forEach(ghost => {
             ghost.update(delta, ernestTile.x, ernestTile.y);
         });
+
+        // 💯 Calculer les points restants basés sur le temps
+        const elapsedSeconds = (this.time.now - this.levelStartTime) / 1000;
+        const remainingTime = Math.max(0, 30 - elapsedSeconds);
+
+        // Points diminuent linéairement de 100 à 0 en 30 secondes
+        this.levelPoints = Math.max(0, Math.floor(100 * (remainingTime / 30)));
+
+        // Mettre à jour l'affichage
+        this.timerText.setText(`Points: ${this.levelPoints} | Temps: ${Math.ceil(remainingTime)}s`);
+
+        // Changer la couleur selon l'urgence
+        if (remainingTime < 10) {
+            this.timerText.setColor('#FF0000'); // Rouge
+        } else if (remainingTime < 20) {
+            this.timerText.setColor('#FFA500'); // Orange
+        } else {
+            this.timerText.setColor('#FFD700'); // Or
+        }
     }
 
     handleGameOver() {
@@ -162,20 +216,28 @@ export class GameScene extends Phaser.Scene {
 
         this.add.text(
             GAME_CONFIG.width / 2,
-            GAME_CONFIG.height / 2 - 30,
+            GAME_CONFIG.height / 2 - 60,
             'GAME OVER!',
             { fontSize: '64px', fill: '#ff0000' }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5).setScrollFactor(0);
 
         this.add.text(
             GAME_CONFIG.width / 2,
-            GAME_CONFIG.height / 2 + 40,
+            GAME_CONFIG.height / 2,
+            `Score final: ${this.totalScore}`,
+            { fontSize: '32px', fill: '#FFD700' }
+        ).setOrigin(0.5).setScrollFactor(0);
+
+        this.add.text(
+            GAME_CONFIG.width / 2,
+            GAME_CONFIG.height / 2 + 50,
             'Cliquez pour rejouer',
             { fontSize: '24px', fill: '#fff' }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5).setScrollFactor(0);
 
         this.input.once('pointerdown', () => {
             this.currentLevel = 1; // Reset niveau
+            this.totalScore = 0; // Reset score
             this.scene.restart();
         });
     }
