@@ -205,6 +205,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleGameOver() {
+        console.log('🚨 handleGameOver appelée !'); // Debug
+        console.log('gameOver avant:', this.gameOver);
         if (this.gameOver) return;
 
         this.gameOver = true;
@@ -219,26 +221,47 @@ export class GameScene extends Phaser.Scene {
             GAME_CONFIG.height / 2 - 60,
             'GAME OVER!',
             { fontSize: '64px', fill: '#ff0000' }
-        ).setOrigin(0.5).setScrollFactor(0);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(1000);
 
         this.add.text(
             GAME_CONFIG.width / 2,
             GAME_CONFIG.height / 2,
             `Score final: ${this.totalScore}`,
             { fontSize: '32px', fill: '#FFD700' }
-        ).setOrigin(0.5).setScrollFactor(0);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(1000);
 
         this.add.text(
             GAME_CONFIG.width / 2,
             GAME_CONFIG.height / 2 + 50,
             'Cliquez pour rejouer',
             { fontSize: '24px', fill: '#fff' }
-        ).setOrigin(0.5).setScrollFactor(0);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(1000);
 
         this.input.once('pointerdown', () => {
-            this.currentLevel = 1; // Reset niveau
-            this.totalScore = 0; // Reset score
-            this.scene.restart();
+            console.log('🖱️ CLIC DÉTECTÉ !');
+
+            // Arrêter tous les sons
+            this.sound.stopAll();
+
+            // Nettoyer manuellement TOUT
+            this.children.removeAll(true); // Détruit tous les objets visuels
+            this.physics.world.colliders.destroy(); // Détruit tous les colliders
+
+            // Reset les variables
+            this.gameOver = false;
+            this.currentLevel = 1;
+            this.totalScore = 0;
+            this.isTransitioning = false;
+            this.ghosts = [];
+            this.walls = null;
+            this.portals = null;
+            this.ernest = null;
+
+            // Reprendre la physique
+            this.physics.resume();
+
+            // Recréer tout comme au début
+            this.create();
         });
     }
 }
