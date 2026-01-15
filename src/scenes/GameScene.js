@@ -12,6 +12,10 @@ export class GameScene extends Phaser.Scene {
         Ernest.preload(this);
         Ghost.preload(this);
 
+        // 🆕 Charger les sprites des obstacles
+        this.load.image('car', 'assets/images/environements/spr_obj_car.png');
+        this.load.image('wall', 'assets/images/environements/spr_obj_wall.png');
+
         // Charger les sons
         this.load.audio('bgMusic', 'assets/sounds/background_music.mp3');
         this.load.audio('gameOverSound', 'assets/sounds/game_over.mp3');
